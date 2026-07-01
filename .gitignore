@@ -1,7 +1,0 @@
-venv/
-modele-whisper/
-voix-piper/
-__pycache__/
-*.wav
-*.m4a
-*.mp3
