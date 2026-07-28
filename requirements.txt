@@ -1,0 +1,6 @@
+# Optional — only needed for the two/three result graphs.
+# Everything else in src/ is Python standard library.
+matplotlib>=3.5
+
+# System packages (NOT pip — install via apt on the Jetson):
+#   sudo apt install stress-ng python3-matplotlib tmux

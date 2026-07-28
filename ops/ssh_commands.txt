@@ -1,0 +1,125 @@
+=====================================================================
+ STRESS TEST — SSH COMMAND REFERENCE (WSL2 -> Jetson Orin Nano)
+ Project: Automated Stress Test — Security Robot QA (M1)
+=====================================================================
+Replace the address once per WSL window, then everything copy-pastes:
+
+    export J=jetsonuser@192.168.1.42
+
+Keep TWO WSL windows open: window 1 drives the test, window 2 is the
+monitor / kill switch.
+
+---------------------------------------------------------------------
+ A) CONNECT (window 1)
+---------------------------------------------------------------------
+    ssh $J
+
+---------------------------------------------------------------------
+ B) COPY THE LATEST SCRIPTS OVER (from WSL, NOT inside ssh)
+    (only needed when the files changed)
+---------------------------------------------------------------------
+    ssh $J "mkdir -p ~/stress"
+    scp /mnt/c/Users/pc/Desktop/m1_stress_test_jetson.py \
+        /mnt/c/Users/pc/Desktop/m0_bench_check.py  $J:~/stress/
+
+---------------------------------------------------------------------
+ C) ONE-TIME INSTALLS (inside ssh)
+---------------------------------------------------------------------
+    sudo apt update && sudo apt install -y stress-ng python3-matplotlib tmux
+
+---------------------------------------------------------------------
+ D) EVERY SESSION: CONFIGURE CLOCKS (inside ssh)
+    Required after EVERY reboot of the Jetson. Order matters.
+---------------------------------------------------------------------
+    sudo nvpmodel -q                  # confirm mode (must be the robot's mode)
+    sudo jetson_clocks                # pin clocks at the mode maximum
+    cat /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq \
+        /sys/devices/system/cpu/cpu0/cpufreq/scaling_max_freq
+                                      # the two numbers must be EQUAL
+
+---------------------------------------------------------------------
+ E) OPTIONAL PRE-CHECK (inside ssh)
+---------------------------------------------------------------------
+    cd ~/stress && python3 m0_bench_check.py     # want: READY FOR M1
+
+    # cooling-device inventory (send this output back once):
+    for c in /sys/class/thermal/cooling_device*; do \
+      echo "$(basename $c): $(cat $c/type) state=$(cat $c/cur_state)/$(cat $c/max_state)"; done
+
+---------------------------------------------------------------------
+ F) RUN THE TEST — ALWAYS INSIDE TMUX (inside ssh)
+    Read the room thermometer first; replace 24.5 / 60 with real values.
+---------------------------------------------------------------------
+    tmux new -s stress
+    cd ~/stress
+
+    # 1) shakedown: one gentle level, ~3 min
+    python3 m1_stress_test_jetson.py --ambient-c 24.5 --levels 10 --trials 1
+
+    # 2) full fast run, ~10-12 min  (the standard run)
+    python3 m1_stress_test_jetson.py --ambient-c 24.5 --humidity 60
+
+    # 3) deep run, ~2 h  (calibration / weekly only)
+    python3 m1_stress_test_jetson.py --ambient-c 24.5 --profile deep
+
+  Detach and leave it running :  Ctrl-B  then  D
+  Reattach later              :  ssh $J -t "tmux attach -t stress"
+
+  Verdicts: PASS = exit 0 | WARN = exit 1 | FAIL = exit 2
+  Every run writes:  ~/stress/runs/run_YYYYMMDD_HHMMSS/
+    report.txt, samples.csv, levels.csv, metadata.json,
+    temp_vs_load.png, freq_vs_load.png, fan_vs_load.png
+
+---------------------------------------------------------------------
+ G) MONITOR from window 2 (never touches the test)
+---------------------------------------------------------------------
+    ssh $J "tegrastats --interval 2000"            # live view (Ctrl-C exits view only)
+    ssh $J 'cat /sys/class/thermal/thermal_zone*/temp'   # 51500 = 51.5 C
+    ssh $J "pgrep -a stress-ng"                    # is a load running?
+    ssh $J "ls ~/stress/runs"                      # runs so far
+    # live view of the latest report (run inside an ssh session):
+    #   tail -f ~/stress/runs/$(ls -t ~/stress/runs | head -1)/report.txt
+
+---------------------------------------------------------------------
+ H) STOPPING THE TEST — in order of preference
+---------------------------------------------------------------------
+ 1. Attached in tmux (cleanest):        press Ctrl-C
+ 2. Remote graceful stop (window 2):
+        ssh $J 'pkill -INT -f m1_stress_test_jetson.py'
+ 3. Kill the tmux session (also clean — script handles SIGHUP):
+        ssh $J 'tmux kill-session -t stress'
+ 4. EMERGENCY ONLY (script hung; bypasses cleanup, so BOTH commands
+    together, always):
+        ssh $J 'pkill -9 -f m1_stress_test_jetson.py; pkill -9 stress-ng'
+
+ All graceful stops write a FAIL report with cause: operator.
+
+---------------------------------------------------------------------
+ I) VERIFY EVERYTHING IS STOPPED (after any stop, mandatory after H4)
+---------------------------------------------------------------------
+    ssh $J 'pgrep -a stress-ng || echo "CLEAN - no load running"'
+    ssh $J 'cat /sys/class/thermal/thermal_zone*/temp'
+    # run the temp command twice ~30 s apart: numbers must be FALLING
+
+---------------------------------------------------------------------
+ J) RETRIEVE RESULTS TO WINDOWS (from WSL, not inside ssh)
+---------------------------------------------------------------------
+    scp -r $J:~/stress/runs  /mnt/c/Users/pc/Desktop/
+    scp $J:~/stress/bench_report.txt \
+        $J:~/stress/tegrastats_sample.txt  /mnt/c/Users/pc/Desktop/
+
+---------------------------------------------------------------------
+ K) HOUSEKEEPING (inside ssh, occasionally)
+---------------------------------------------------------------------
+    du -sh ~/stress/runs                 # disk used by results
+    ls -t ~/stress/runs | tail -n +20    # runs older than the last 20
+    tmux kill-session -t stress          # close the session when done
+
+=====================================================================
+ GOLDEN RULES
+  - nvpmodel THEN jetson_clocks; re-do after every reboot.
+  - Always run inside tmux.
+  - Never auto-retry immediately after a FAIL (wear guard).
+  - A healthy run: idle about 25-30 C above the room, clocks flat at
+    the pinned max, fan stepping up is NORMAL (it's in the fan graph).
+=====================================================================
