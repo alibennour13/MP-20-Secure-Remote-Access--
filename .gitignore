@@ -1,0 +1,38 @@
+# =========================================================
+# MP-20 SECURITY PROJECT - SECRETS
+# =========================================================
+
+# Environment files
+.env
+.env.*
+
+# Private keys
+*.key
+*.pem
+
+# SSH private keys
+id_rsa
+id_rsa.*
+id_ed25519
+id_ed25519.*
+
+# WireGuard real configuration
+wireguard/wg0.conf
+
+# RADIUS secrets
+freeradius/clients.conf
+
+# TOTP secrets
+*.google_authenticator
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
