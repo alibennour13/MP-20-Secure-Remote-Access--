@@ -1,0 +1,36 @@
+
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Langue | MP-20</title><link rel="stylesheet" href="{{ url_for("static", filename="css/style.css") }}"></head>
+<body>
+{{ topbar|safe }}
+<main class="page">
+    <a class="btn-back" href="/dashboard">{{ icons.back|safe }}Tableau de bord</a>
+    <div class="page-header">
+        <span class="eyebrow">Reglage</span>
+        <h2>Langue du robot</h2>
+        <p>Langue utilisee pour la synthese vocale et les messages du robot.</p>
+    </div>
+    <div class="card">
+        <div class="lang-grid">
+            <div class="lang-tile {% if robot.language=='Français' %}active{% endif %}" onclick="setLanguage('Français')">
+                <div class="lang-flag">🇫🇷</div><div class="lang-name">Français</div>
+            </div>
+            <div class="lang-tile {% if robot.language=='English' %}active{% endif %}" onclick="setLanguage('English')">
+                <div class="lang-flag">🇬🇧</div><div class="lang-name">English</div>
+            </div>
+            <div class="lang-tile {% if robot.language=='العربية' %}active{% endif %}" onclick="setLanguage('العربية')">
+                <div class="lang-flag">🇹🇳</div><div class="lang-name">العربية</div>
+            </div>
+        </div>
+    </div>
+</main>
+<div id="toast" class="toast">Message</div>
+<script>
+<script src="{{ url_for("static", filename="js/common.js") }}"></script>
+async function setLanguage(lang) {
+    const r = await postJSON("/api/language", { language: lang });
+    if (r.success) setTimeout(() => location.reload(), 500);
+}
+</script>
+</body></html>

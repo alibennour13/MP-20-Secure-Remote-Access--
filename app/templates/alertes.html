@@ -1,0 +1,61 @@
+
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Alertes | MP-20</title><link rel="stylesheet" href="{{ url_for("static", filename="css/style.css") }}"></head>
+<body>
+{{ topbar|safe }}
+<main class="page">
+    <a class="btn-back" href="/dashboard">{{ icons.back|safe }}Tableau de bord</a>
+    <div class="page-header">
+        <span class="eyebrow">Surveillance</span>
+        <h2>Alertes</h2>
+        <p>Anomalies detectees autour du robot, de la plus recente a la plus ancienne.</p>
+    </div>
+    <div class="card">
+        {% if alerts|length == 0 %}
+        <div class="card-empty">
+            <strong>Aucune alerte</strong>
+            Le robot n'a rien signale d'anormal. Simulez une anomalie pour tester la chaine.
+        </div>
+        {% else %}
+        <div class="alerts-list">
+            {% for a in alerts %}
+            <div class="alert-item alert-{{ a.severity }} {% if a.acknowledged %}alert-read{% endif %}">
+                <span class="sev-dot"></span>
+                <div class="alert-body">
+                    <div class="alert-message">{{ a.message }}</div>
+                    <div class="alert-meta">{{ a.time }} · {{ a.type }} · {{ a.severity }}</div>
+                </div>
+                {% if not a.acknowledged %}
+                <button class="btn-ack" onclick="acknowledgeAlert({{ a.id }})">{{ icons.check|safe }}Marquer comme lue</button>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <div class="alert-actions">
+            <button class="btn-small" onclick="simulateAlert()">{{ icons.flask|safe }}Simuler une anomalie</button>
+            {% if role == "super_admin" and alerts|length > 0 %}
+            <button class="btn-delete" onclick="clearAlerts()">{{ icons.trash|safe }}Effacer l'historique</button>
+            {% endif %}
+        </div>
+    </div>
+</main>
+<div id="toast" class="toast">Message</div>
+<script>
+<script src="{{ url_for("static", filename="js/common.js") }}"></script>
+async function acknowledgeAlert(id) {
+    const r = await postJSON("/api/alerts/acknowledge", { alert_id: id });
+    if (r.success) setTimeout(() => location.reload(), 450);
+}
+async function simulateAlert() {
+    const r = await postJSON("/api/alerts/simulate", {});
+    if (r.success) setTimeout(() => location.reload(), 450);
+}
+async function clearAlerts() {
+    if (!confirm("Effacer definitivement l'historique des alertes ?")) return;
+    const r = await postJSON("/api/alerts/clear", {});
+    if (r.success) setTimeout(() => location.reload(), 450);
+}
+</script>
+</body></html>

@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MP-20 | Connexion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root {
+    --ink:#0A0C10; --surface:#11141A; --surface-2:#171B22;
+    --line:#222731; --line-2:#2E3542;
+    --text:#E9EAEE; --text-2:#98A1B2; --text-3:#6B7382;
+    --iris:#6E7BFF; --iris-2:#A177FF; --mint:#35D0A5; --rose:#FF5A5F;
+    --font-display:'Space Grotesk','Inter',system-ui,sans-serif;
+    --font-body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --font-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+}
+body {
+    font-family:var(--font-body); background:var(--ink); color:var(--text);
+    min-height:100vh; display:grid; grid-template-columns:1.05fr .95fr;
+    -webkit-font-smoothing:antialiased;
+}
+
+/* --- Panneau gauche : la marque et ce que fait le produit --- */
+.pane-brand {
+    position:relative; overflow:hidden; padding:56px 54px;
+    display:flex; flex-direction:column; justify-content:space-between;
+    background:
+        radial-gradient(760px 420px at 12% 6%, rgba(110,123,255,.22), transparent 62%),
+        radial-gradient(560px 380px at 88% 96%, rgba(161,119,255,.16), transparent 58%),
+        var(--surface);
+    border-right:1px solid var(--line);
+}
+.pane-brand::before {
+    content:""; position:absolute; inset:0; pointer-events:none; opacity:.5;
+    background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+    background-size:44px 44px;
+    -webkit-mask-image:radial-gradient(600px 500px at 25% 30%, #000, transparent 78%);
+    mask-image:radial-gradient(600px 500px at 25% 30%, #000, transparent 78%);
+}
+.pane-brand > * { position:relative; }
+.mark { display:flex; align-items:center; gap:13px; }
+.mark-badge {
+    width:44px; height:44px; border-radius:13px;
+    background:linear-gradient(140deg, var(--iris), var(--iris-2));
+    display:flex; align-items:center; justify-content:center;
+    font-family:var(--font-mono); font-weight:700; font-size:15px; color:#0A0C10;
+    box-shadow:0 10px 26px -10px rgba(110,123,255,.9);
+}
+.mark-text strong { font-family:var(--font-display); font-size:15.5px; letter-spacing:.2px; display:block; }
+.mark-text span { font-size:11.5px; color:var(--text-3); letter-spacing:.3px; }
+
+.pitch h1 {
+    font-family:var(--font-display); font-size:38px; line-height:1.15;
+    font-weight:600; letter-spacing:-.8px; margin-bottom:16px;
+}
+.pitch h1 em { font-style:normal; color:transparent; background:linear-gradient(100deg,var(--iris),var(--iris-2)); -webkit-background-clip:text; background-clip:text; }
+.pitch p { color:var(--text-2); font-size:14.5px; line-height:1.65; max-width:400px; }
+.pitch-list { list-style:none; margin-top:28px; display:flex; flex-direction:column; gap:11px; }
+.pitch-list li { display:flex; align-items:center; gap:11px; font-size:13.5px; color:var(--text-2); }
+.pitch-list b { font-family:var(--font-mono); font-size:11px; font-weight:500; color:var(--iris);
+    border:1px solid rgba(110,123,255,.3); background:rgba(110,123,255,.09);
+    padding:3px 7px; border-radius:6px; letter-spacing:.4px; }
+.pane-foot { font-family:var(--font-mono); font-size:11px; color:var(--text-3); letter-spacing:.4px; }
+
+/* --- Panneau droit : le formulaire --- */
+.pane-form { display:flex; align-items:center; justify-content:center; padding:40px; }
+.form-inner { width:100%; max-width:352px; }
+.form-inner h2 { font-family:var(--font-display); font-size:25px; font-weight:600; letter-spacing:-.3px; }
+.form-sub { color:var(--text-2); font-size:13.5px; margin:7px 0 30px; }
+label { display:block; font-size:12px; font-weight:600; margin-bottom:8px; letter-spacing:.2px; color:var(--text-2); }
+input {
+    width:100%; padding:13px 14px; border:1px solid var(--line-2); border-radius:11px;
+    margin-bottom:18px; font-size:14px; font-family:var(--font-body);
+    background:var(--surface-2); color:var(--text); outline:none; transition:.16s;
+}
+input::placeholder { color:var(--text-3); }
+input:focus { border-color:var(--iris); box-shadow:0 0 0 3px rgba(110,123,255,.16); background:var(--surface); }
+button {
+    width:100%; padding:13px; border:none; border-radius:11px; margin-top:4px;
+    background:linear-gradient(140deg, var(--iris), var(--iris-2)); color:#0A0C10;
+    font-family:var(--font-body); font-size:14px; font-weight:700; cursor:pointer;
+    transition:transform .12s, box-shadow .16s; box-shadow:0 12px 26px -14px rgba(110,123,255,1);
+}
+button:hover { transform:translateY(-1px); box-shadow:0 16px 32px -14px rgba(110,123,255,1); }
+button:active { transform:translateY(0); }
+.error {
+    display:flex; gap:10px; align-items:flex-start;
+    background:rgba(255,90,95,.09); border:1px solid rgba(255,90,95,.28); color:#FFB4B6;
+    padding:12px 14px; border-radius:11px; margin-bottom:22px; font-size:13px; line-height:1.45;
+}
+.error::before { content:"!"; font-family:var(--font-mono); font-weight:700; color:var(--rose); }
+.hint {
+    margin-top:26px; padding-top:18px; border-top:1px solid var(--line);
+    font-family:var(--font-mono); font-size:11.5px; color:var(--text-3); line-height:1.9;
+}
+.hint span { color:var(--text-2); }
+
+:focus-visible { outline:2px solid var(--iris); outline-offset:2px; }
+
+@media (max-width:900px) {
+    body { grid-template-columns:1fr; }
+    .pane-brand { padding:34px 28px; border-right:none; border-bottom:1px solid var(--line); }
+    .pitch h1 { font-size:29px; }
+    .pitch-list, .pane-foot { display:none; }
+    .pane-form { padding:32px 28px 48px; }
+}
+</style>
+</head>
+<body>
+<section class="pane-brand">
+    <div class="mark">
+        <div class="mark-badge">MP</div>
+        <div class="mark-text"><strong>MP-20</strong><span>Robot Control Platform</span></div>
+    </div>
+
+    <div class="pitch">
+        <h1>Votre robot,<br><em>sous controle.</em></h1>
+        <p>Pilotez le MP-20, suivez ses anomalies et donnez a vos techniciens
+           exactement les acces dont ils ont besoin — rien de plus.</p>
+        <ul class="pitch-list">
+            <li><b>01</b> Redemarrage et arret a distance</li>
+            <li><b>02</b> Alertes horodatees et journal complet</li>
+            <li><b>03</b> Comptes techniciens geres par vous</li>
+        </ul>
+    </div>
+
+    <div class="pane-foot">PLATEFORME APPLICATIVE · AUCUN ACCES SYSTEME</div>
+</section>
+
+<section class="pane-form">
+    <div class="form-inner">
+        <h2>Connexion</h2>
+        <p class="form-sub">Identifiez-vous pour acceder au tableau de bord.</p>
+        {% if error %}<div class="error">{{ error }}</div>{% endif %}
+        <form method="POST">
+            <label for="username">Identifiant</label>
+            <input id="username" type="text" name="username"  required autofocus>
+            <label for="password">Mot de passe</label>
+            <input id="password" type="password" name="password"  required>
+            <button type="submit">Se connecter</button>
+        </form>
+    </div>
+</section>
+</body>
+</html>

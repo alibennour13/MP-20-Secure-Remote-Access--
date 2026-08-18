@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Audio &amp; voix | MP-20</title><link rel="stylesheet" href="{{ url_for("static", filename="css/style.css") }}"></head>
+<body>
+{{ topbar|safe }}
+<main class="page">
+    <a class="btn-back" href="/dashboard">{{ icons.back|safe }}Tableau de bord</a>
+    <div class="page-header">
+        <span class="eyebrow">Reglage</span>
+        <h2>Audio &amp; voix</h2>
+        <p>Chaque modification est appliquee au robot immediatement.</p>
+    </div>
+    <div class="card">
+        <div class="control-block">
+            <label for="volume">Volume</label>
+            <div class="volume-number"><span id="volumeDisplay">{{ robot.volume }}</span><small>%</small></div>
+            <input id="volume" type="range" min="0" max="100" value="{{ robot.volume }}">
+        </div>
+        <div class="control-block">
+            <label for="voice">Timbre de voix</label>
+            <select id="voice">
+                <option value="Female" {% if robot.voice=="Female" %}selected{% endif %}>Feminine</option>
+                <option value="Male" {% if robot.voice=="Male" %}selected{% endif %}>Masculine</option>
+            </select>
+        </div>
+        <div class="control-block">
+            <label for="speed">Debit de parole</label>
+            <select id="speed">
+                {% for s in [0.5,0.75,1.0,1.25,1.5,2.0] %}
+                <option value="{{ s }}" {% if robot.speed==s %}selected{% endif %}>{{ s }}x</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+</main>
+<div id="toast" class="toast">Message</div>
+<script>
+<script src="{{ url_for("static", filename="js/common.js") }}"></script>
+const volume = document.getElementById("volume");
+volume.addEventListener("input", function () { document.getElementById("volumeDisplay").textContent = this.value; });
+volume.addEventListener("change", function () { postJSON("/api/volume", { volume: this.value }); });
+document.getElementById("voice").addEventListener("change", function () { postJSON("/api/voice", { voice: this.value }); });
+document.getElementById("speed").addEventListener("change", function () { postJSON("/api/speed", { speed: this.value }); });
+</script>
+</body></html>

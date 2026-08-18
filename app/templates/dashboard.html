@@ -1,0 +1,152 @@
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MP-20 | Tableau de bord</title>
+<link rel="stylesheet" href="{{ url_for("static", filename="css/style.css") }}">
+</head>
+<body>
+{{ topbar|safe }}
+
+<main class="page">
+    <div class="page-header">
+        <span class="eyebrow">Poste de pilotage</span>
+        <h2>Tableau de bord</h2>
+        <p>Choisissez une action pour piloter votre robot.</p>
+    </div>
+
+    <!-- Barre de telemetrie : tout ce que la machine emet, en mono -->
+    {% set is_on = robot.status == 'Online' %}
+    {% set blevel = 'crit' if robot.battery < 15 else ('low' if robot.battery < 40 else '') %}
+    <section class="telemetry">
+        <div class="beacon {% if not is_on %}off{% endif %}"><i></i></div>
+        <div class="tm-id">
+            <div class="name">{{ robot.name }}</div>
+            <div class="sub">{{ robot.id }}</div>
+        </div>
+        <div class="tm-sep"></div>
+
+        <div class="tm-stat">
+            <div class="tm-label">Etat</div>
+            <span class="pill {% if is_on %}pill-on{% else %}pill-off{% endif %}">
+                {% if is_on %}En ligne{% else %}Hors ligne{% endif %}
+            </span>
+        </div>
+        <div class="tm-sep"></div>
+
+        <div class="tm-stat">
+            <div class="tm-label">Batterie</div>
+            <div class="tm-value">{{ robot.battery }}%</div>
+            <div class="cells {{ blevel }}">
+                {% for i in range(10) %}<i class="{% if robot.battery >= (i+1)*10 %}on{% endif %}"></i>{% endfor %}
+            </div>
+        </div>
+        <div class="tm-sep"></div>
+
+        <div class="tm-stat">
+            <div class="tm-label">Langue</div>
+            <div class="tm-value">{{ robot.language }}</div>
+        </div>
+        <div class="tm-sep"></div>
+
+        <div class="tm-stat">
+            <div class="tm-label">Volume</div>
+            <div class="tm-value">{{ robot.volume }}%</div>
+        </div>
+        <div class="tm-sep"></div>
+
+        <div class="tm-stat">
+            <div class="tm-label">Debit vocal</div>
+            <div class="tm-value">{{ robot.speed }}x</div>
+        </div>
+    </section>
+
+    <div class="tile-grid">
+
+        <div class="tile tile-success" onclick="robotAction('/api/robot/restart')" tabindex="0"
+             onkeydown="if(event.key==='Enter')robotAction('/api/robot/restart')">
+            <div class="tile-icon">{{ icons.restart|safe }}</div>
+            <div class="tile-title">Redemarrer</div>
+            <div class="tile-sub">Relance le robot sans le deconfigurer</div>
+        </div>
+
+        <div class="tile tile-danger" onclick="robotAction('/api/robot/shutdown')" tabindex="0"
+             onkeydown="if(event.key==='Enter')robotAction('/api/robot/shutdown')">
+            <div class="tile-icon">{{ icons.power|safe }}</div>
+            <div class="tile-title">Eteindre</div>
+            <div class="tile-sub">Arret complet jusqu'au prochain demarrage</div>
+        </div>
+
+        <a class="tile tile-warning" href="/alertes">
+            <div class="tile-icon">{{ icons.alert|safe }}</div>
+            <div class="tile-title">Alertes</div>
+            <div class="tile-sub">Anomalies detectees autour du robot</div>
+            <div class="tile-go">{{ icons.chevron|safe }}</div>
+            {% if unread_count > 0 %}<span class="tile-badge">{{ unread_count }}</span>{% endif %}
+        </a>
+
+        <a class="tile" href="/journal">
+            <div class="tile-icon">{{ icons.journal|safe }}</div>
+            <div class="tile-title">Journal</div>
+            <div class="tile-sub">Historique horodate de l'activite</div>
+            <div class="tile-go">{{ icons.chevron|safe }}</div>
+        </a>
+
+        <a class="tile" href="/stats?robot_id={{ robot.id }}">
+            <div class="tile-icon">{{ icons.stats|safe }}</div>
+            <div class="tile-title">Statistiques</div>
+            <div class="tile-sub">Graphiques et tendances sur 7 jours</div>
+            <div class="tile-go">{{ icons.chevron|safe }}</div>
+        </a>
+
+        {% if role == "super_admin" %}
+        <a class="tile" href="/langue">
+            <div class="tile-icon">{{ icons.globe|safe }}</div>
+            <div class="tile-title">Langue</div>
+            <div class="tile-sub">Langue de la synthese vocale</div>
+            <div class="tile-go">{{ icons.chevron|safe }}</div>
+        </a>
+
+        <a class="tile" href="/audio">
+            <div class="tile-icon">{{ icons.audio|safe }}</div>
+            <div class="tile-title">Audio &amp; voix</div>
+            <div class="tile-sub">Volume, timbre et debit de parole</div>
+            <div class="tile-go">{{ icons.chevron|safe }}</div>
+        </a>
+
+        <a class="tile" href="/comptes">
+            <div class="tile-icon">{{ icons.users|safe }}</div>
+            <div class="tile-title">Comptes</div>
+            <div class="tile-sub">Acces techniciens de votre equipe</div>
+            <div class="tile-go">{{ icons.chevron|safe }}</div>
+        </a>
+        {% else %}
+        <div class="tile tile-locked">
+            <div class="tile-lock">{{ icons.lock|safe }}</div>
+            <div class="tile-icon">{{ icons.globe|safe }}</div>
+            <div class="tile-title">Langue</div>
+            <div class="tile-sub">Reserve au super admin</div>
+        </div>
+        <div class="tile tile-locked">
+            <div class="tile-lock">{{ icons.lock|safe }}</div>
+            <div class="tile-icon">{{ icons.audio|safe }}</div>
+            <div class="tile-title">Audio &amp; voix</div>
+            <div class="tile-sub">Reserve au super admin</div>
+        </div>
+        <div class="tile tile-locked">
+            <div class="tile-lock">{{ icons.lock|safe }}</div>
+            <div class="tile-icon">{{ icons.users|safe }}</div>
+            <div class="tile-title">Comptes</div>
+            <div class="tile-sub">Reserve au super admin</div>
+        </div>
+        {% endif %}
+
+    </div>
+</main>
+
+<div id="toast" class="toast">Message</div>
+<script src="{{ url_for("static", filename="js/common.js") }}"></script>
+</body>
+</html>

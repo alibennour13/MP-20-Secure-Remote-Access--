@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Journal | MP-20</title><link rel="stylesheet" href="{{ url_for("static", filename="css/style.css") }}"></head>
+<body>
+{{ topbar|safe }}
+<main class="page">
+    <a class="btn-back" href="/dashboard">{{ icons.back|safe }}Tableau de bord</a>
+    <div class="page-header">
+        <span class="eyebrow">Tracabilite</span>
+        <h2>Journal d'activite</h2>
+        {% if role == "super_admin" %}<p>Trente derniers evenements enregistres sur ce robot.</p>
+        {% else %}<p>Vos propres connexions et actions, uniquement.</p>{% endif %}
+    </div>
+    <div class="card">
+        <div class="export-links">
+            <a href="/api/export/logs?robot_id={{ robot.id }}">{{ icons.download|safe }}Exporter en CSV</a>
+        </div>
+        {% if logs|length == 0 %}
+        <div class="card-empty">
+            <strong>Rien a afficher pour l'instant</strong>
+            Les actions sur le robot apparaitront ici, horodatees.
+        </div>
+        {% else %}
+        <table class="data-table">
+            <thead><tr><th>Date et heure</th><th>Evenement</th><th>Par</th></tr></thead>
+            <tbody>
+                {% for entry in logs %}
+                <tr>
+                    <td class="mono">{{ entry.time }}</td>
+                    <td class="strong">{{ entry.event }}</td>
+                    <td class="mono">{{ entry.by_user }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</main>
+</body></html>

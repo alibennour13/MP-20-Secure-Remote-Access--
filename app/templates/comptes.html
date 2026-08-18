@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+<html lang="fr"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comptes | MP-20</title><link rel="stylesheet" href="{{ url_for("static", filename="css/style.css") }}"></head>
+<body>
+{{ topbar|safe }}
+<main class="page">
+    <a class="btn-back" href="/dashboard">{{ icons.back|safe }}Tableau de bord</a>
+    <div class="page-header">
+        <span class="eyebrow">Equipe</span>
+        <h2>Gestion des comptes</h2>
+        <p>Creez un acces technicien pour un employe, ou retirez-le quand il n'en a plus besoin.</p>
+    </div>
+    <div class="card">
+        <h3>Ajouter un technicien</h3>
+        <div class="user-form">
+            <div><label for="newUsername">Identifiant</label><input type="text" id="newUsername" placeholder="tech2"></div>
+            <div><label for="newPassword">Mot de passe</label><input type="text" id="newPassword" placeholder="6 caracteres minimum"></div>
+            <div><label for="newDisplayName">Nom affiche</label><input type="text" id="newDisplayName" placeholder="Technicien 2"></div>
+            <button class="btn-small" onclick="createTech()">{{ icons.plus|safe }}Ajouter</button>
+        </div>
+        <p id="createError" class="field-error"></p>
+    </div>
+
+    <div class="card">
+        <h3>Comptes rattaches a ce robot</h3>
+        <table class="data-table">
+            <thead><tr><th>Identifiant</th><th>Nom affiche</th><th>Role</th><th></th></tr></thead>
+            <tbody>
+                {% for u in robot_users %}
+                <tr>
+                    <td class="mono">{{ u.username }}</td>
+                    <td class="strong">{{ u.display_name }}</td>
+                    <td><span class="badge-role badge-{{ u.role }}">{{ u.role }}</span></td>
+                    <td style="text-align:right;">
+                        {% if u.role=="technicien" %}
+                        <button class="btn-delete" onclick="deleteTech('{{ u.username }}')">{{ icons.trash|safe }}Retirer</button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+<div id="toast" class="toast">Message</div>
+<script>
+<script src="{{ url_for("static", filename="js/common.js") }}"></script>
+async function createTech() {
+    const username = document.getElementById("newUsername").value.trim();
+    const password = document.getElementById("newPassword").value.trim();
+    const displayName = document.getElementById("newDisplayName").value.trim();
+    const errBox = document.getElementById("createError");
+    errBox.textContent = "";
+    if (!username || !password) { errBox.textContent = "Renseignez un identifiant et un mot de passe."; return; }
+    if (password.length < 6) { errBox.textContent = "Le mot de passe doit faire au moins 6 caracteres."; return; }
+    const result = await postJSON("/api/users/create", { username, password, display_name: displayName });
+    if (result.success) setTimeout(() => location.reload(), 550); else errBox.textContent = result.message;
+}
+async function deleteTech(username) {
+    if (!confirm("Retirer l'acces de " + username + " ?")) return;
+    const result = await postJSON("/api/users/delete", { username });
+    if (result.success) setTimeout(() => location.reload(), 450);
+}
+</script>
+</body></html>
