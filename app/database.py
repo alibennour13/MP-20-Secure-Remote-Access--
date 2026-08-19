@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from datetime import datetime
 from flask import current_app
@@ -71,11 +72,11 @@ def init_db():
         )
         cur.execute(
             "INSERT INTO users (username,password_hash,role,display_name) VALUES (?,?,?,?)",
-            ("client", generate_password_hash("123456"), "super_admin", "Super Admin")
+            ("client", generate_password_hash(os.getenv("ADMIN_PASSWORD")), "super_admin", "Super Admin")
         )
         cur.execute(
             "INSERT INTO users (username,password_hash,role,display_name) VALUES (?,?,?,?)",
-            ("tech1", generate_password_hash("tech123"), "technicien", "Technicien 1")
+            ("tech1", generate_password_hash(os.getenv("TECH_PASSWORD")), "technicien", "Technicien 1")
         )
         # Le super_admin et le technicien de demo sont tous deux
         # rattaches a l'unique robot du compte.
