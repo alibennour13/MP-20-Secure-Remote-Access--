@@ -243,6 +243,4 @@ Pour signaler une vulnérabilité, ouvrir une issue sur ce dépôt.
 - [ ] Dashboard technique pour le fournisseur (vue consolidée Wazuh et état des services)
 - [ ] Valider le refus RBAC avec des comptes dédiés
 
-## Auteur
 
-**Ali Bennour**, ingénierie mécatronique (ING-3), TEK-UP University
